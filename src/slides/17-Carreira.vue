@@ -3,7 +3,7 @@ import Slide from '../deck/Slide.vue'
 import Icon from '../components/Icon.vue'
 import { useSteps } from '../deck/steps'
 
-// Passos 1..3 = "priorize"; 4..5 = "evite". Cada passo também sobe um degrau da escada.
+// Passos 1..2 = "evite"; 3..5 = "priorize". Cada passo também sobe um degrau da escada.
 const { step } = useSteps()
 
 const prioritize = [
@@ -42,17 +42,17 @@ const STAIRS = 5
       </div>
 
       <div class="right">
-        <section class="group group--do">
-          <span v-reveal:fade="600" class="group__label"><Icon name="check" /> priorize</span>
+        <section class="group group--avoid">
+          <span v-reveal:fade="600" class="group__label"><Icon name="x" /> evite</span>
           <ul>
-            <li v-for="item in prioritize" :key="item" v-step:left>{{ item }}</li>
+            <li v-for="item in avoid" :key="item" v-step:left>{{ item }}</li>
           </ul>
         </section>
 
-        <section class="group group--avoid">
-          <span v-reveal:fade="700" class="group__label"><Icon name="x" /> evite</span>
+        <section class="group group--do">
+          <span v-reveal:fade="700" class="group__label"><Icon name="check" /> priorize</span>
           <ul>
-            <li v-for="item in avoid" :key="item" v-step:left>{{ item }}</li>
+            <li v-for="item in prioritize" :key="item" v-step:left>{{ item }}</li>
           </ul>
         </section>
       </div>
@@ -143,7 +143,7 @@ const STAIRS = 5
     bottom 0.8s var(--ease-out);
 }
 
-/* ---------- priorize × evite ---------- */
+/* ---------- evite × priorize ---------- */
 .right {
   display: flex;
   flex-direction: column;
