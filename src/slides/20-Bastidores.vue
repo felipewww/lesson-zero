@@ -48,11 +48,6 @@ const scope = ['planejamento', 'slides', 'animações', 'interações']
         </span>
       </p>
 
-      <footer v-reveal:fade="900" class="signature">
-        <span class="signature__name">Felipe Barreiros</span>
-        <span class="signature__sep" />
-        <span>felipewww@outlook.com.br</span>
-      </footer>
     </div>
   </Slide>
 </template>
@@ -242,32 +237,5 @@ const scope = ['planejamento', 'slides', 'animações', 'interações']
 .human[data-step-shown] .human__mark {
   background-size: 100% 0.32em;
   transition-delay: 700ms;
-}
-
-/* ---------- assinatura ---------- */
-.signature {
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  gap: 0.8em;
-  font-size: calc(var(--text-base) * 0.6);
-  color: var(--slide-muted);
-  opacity: 0.8;
-}
-
-.signature__name {
-  color: var(--slide-fg);
-  font-weight: 600;
-}
-
-.signature__sep {
-  width: 4px;
-  height: 4px;
-  border-radius: 50%;
-  background: var(--slide-muted);
 }
 </style>
