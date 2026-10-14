@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import Slide from '../deck/Slide.vue'
-import Icon, { type IconName } from '../components/Icon.vue'
-import { useSteps } from '../deck/steps'
+import Slide from '../../deck/Slide.vue'
+import Icon, { type IconName } from '../../components/Icon.vue'
+import { useSteps } from '../../deck/steps'
 
 // Passos 1..5: cada bloco da agenda do dia; o bloco atual fica destacado
 const { step } = useSteps()

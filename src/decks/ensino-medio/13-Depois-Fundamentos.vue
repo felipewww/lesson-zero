@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import Slide from '../deck/Slide.vue'
-import Icon from '../components/Icon.vue'
+import Slide from '../../deck/Slide.vue'
+import Icon from '../../components/Icon.vue'
 
 // Passo 1: nível intermediário sobe.  Passo 2: nível avançado sobe.
 const base = ['Lógica', 'JS / TS', 'HTML / CSS', 'SQL', 'APIs', 'Git', 'React / Vue']

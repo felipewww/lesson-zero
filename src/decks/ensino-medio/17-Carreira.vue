@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import Slide from '../deck/Slide.vue'
-import Icon from '../components/Icon.vue'
-import { useSteps } from '../deck/steps'
+import Slide from '../../deck/Slide.vue'
+import Icon from '../../components/Icon.vue'
+import { useSteps } from '../../deck/steps'
 
 // Passos 1..2 = "evite"; 3..5 = "priorize". Cada passo também sobe um degrau da escada.
 const { step } = useSteps()

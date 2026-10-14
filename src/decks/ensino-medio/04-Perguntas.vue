@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { ref, watch } from 'vue'
-import Slide from '../deck/Slide.vue'
-import Icon, { type IconName } from '../components/Icon.vue'
-import { useSteps } from '../deck/steps'
+import Slide from '../../deck/Slide.vue'
+import Icon, { type IconName } from '../../components/Icon.vue'
+import { useSteps } from '../../deck/steps'
 
 // Passos: 1 = "Mas alguém precisa decidir"; 2..6 = cada pergunta; 7 = mensagem-chave
 const { step } = useSteps()

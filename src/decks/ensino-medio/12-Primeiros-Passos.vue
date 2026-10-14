@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { computed } from 'vue'
-import Slide from '../deck/Slide.vue'
-import Icon, { type IconName } from '../components/Icon.vue'
-import { useSteps } from '../deck/steps'
+import Slide from '../../deck/Slide.vue'
+import Icon, { type IconName } from '../../components/Icon.vue'
+import { useSteps } from '../../deck/steps'
 
 // Passos 1..7: cada parada da trilha.  Passo 8: trilha paralela do inglês
 const { step } = useSteps()

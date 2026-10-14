@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import Slide from '../deck/Slide.vue'
-import Icon, { type IconName } from '../components/Icon.vue'
-import { useSteps } from '../deck/steps'
+import Slide from '../../deck/Slide.vue'
+import Icon, { type IconName } from '../../components/Icon.vue'
+import { useSteps } from '../../deck/steps'
 
 // Passos 1..3: cada grupo de especialidades; o grupo atual fica em destaque
 const { step } = useSteps()

@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { computed, onBeforeUnmount, reactive, watch } from 'vue'
-import Slide from '../deck/Slide.vue'
-import Icon from '../components/Icon.vue'
-import { useSteps } from '../deck/steps'
+import Slide from '../../deck/Slide.vue'
+import Icon from '../../components/Icon.vue'
+import { useSteps } from '../../deck/steps'
 
 // Passos: 1..3 = um desafio por vez; 4 = conclusão; 5 = frase de destaque
 const { step } = useSteps()

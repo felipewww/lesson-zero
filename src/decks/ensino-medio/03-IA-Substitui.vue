@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import Slide from '../deck/Slide.vue'
-import Icon from '../components/Icon.vue'
-import { useSteps } from '../deck/steps'
+import Slide from '../../deck/Slide.vue'
+import Icon from '../../components/Icon.vue'
+import { useSteps } from '../../deck/steps'
 
 // Passo 1: a pergunta sobe e aparece o que a IA já faz
 // Passo 2: a provocação final

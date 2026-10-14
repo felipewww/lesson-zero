@@ -1,9 +1,9 @@
 <script setup lang="ts">
-import Slide from '../deck/Slide.vue'
-import jnj from '../assets/logos/jnj.svg'
-import flash from '../assets/logos/flash.svg'
-import hitss from '../assets/logos/hitss.png'
-import beedoo from '../assets/logos/beedoo.png'
+import Slide from '../../deck/Slide.vue'
+import jnj from '../../assets/logos/jnj.svg'
+import flash from '../../assets/logos/flash.svg'
+import hitss from '../../assets/logos/hitss.png'
+import beedoo from '../../assets/logos/beedoo.png'
 
 const previous = [
   { name: 'Flash', logo: flash },

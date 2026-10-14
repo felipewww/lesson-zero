@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import Slide from '../deck/Slide.vue'
-import Icon, { type IconName } from '../components/Icon.vue'
-import { useSteps } from '../deck/steps'
+import Slide from '../../deck/Slide.vue'
+import Icon, { type IconName } from '../../components/Icon.vue'
+import { useSteps } from '../../deck/steps'
 
 // Passo 1: tudo que acontece na escola
 // Passo 2: zoom na matrícula — o fluxo animado

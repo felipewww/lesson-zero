@@ -5,14 +5,23 @@ npm install
 npm run dev
 ```
 
+## Apresentações
+
+Ao abrir o app aparece a tela de escolha (teclas `1`, `2`… ou clique). Cada apresentação é uma pasta em `src/decks/`:
+
+- `src/decks/ensino-medio/` — 1º e 3º ano do Ensino Médio
+- `src/decks/7-ano/` — 7º ano (reaproveita o slide de apresentação do Ensino Médio)
+
+O `index.ts` de cada pasta define id, título e público; `src/decks/index.ts` lista as apresentações na ordem da tela de escolha. O botão de grade nos controles volta para a escolha.
+
 ## Como criar um slide
 
-1. Crie um arquivo em `src/slides/` com prefixo numérico (`03-MeuSlide.vue`). A ordem dos slides segue esse número.
+1. Crie um arquivo na pasta da apresentação (`src/decks/<apresentação>/03-MeuSlide.vue`) com prefixo numérico. A ordem dos slides segue esse número.
 2. Use `Slide` como raiz:
 
 ```vue
 <script setup lang="ts">
-import Slide from '../deck/Slide.vue'
+import Slide from '../../deck/Slide.vue'
 </script>
 
 <template>
@@ -50,7 +59,7 @@ Marque com `v-step` o que deve aparecer aos poucos. → revela o próximo passo,
 Direções iguais às do `v-reveal`. Para lógica própria (destacar item, trocar gráfico), use `useSteps()`:
 
 ```ts
-import { useSteps } from '../deck/steps'
+import { useSteps } from '../../deck/steps'
 const { step } = useSteps()   // 0 = nenhum passo exibido
 // useSteps(4) garante 4 passos mesmo sem elementos v-step
 ```
@@ -66,4 +75,4 @@ Canto inferior direito: voltar, contador de slides, pontos dos passos (preenchid
 | Home / End | primeiro / último |
 | F | tela cheia |
 
-A URL guarda slide e passo atual (`#/3/2`), então recarregar a página mantém a posição.
+A URL guarda apresentação, slide e passo (`#/ensino-medio/3/2`), então recarregar a página mantém a posição.

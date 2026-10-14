@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import Slide from '../deck/Slide.vue'
-import Icon, { type IconName } from '../components/Icon.vue'
+import Slide from '../../deck/Slide.vue'
+import Icon, { type IconName } from '../../components/Icon.vue'
 
 // Passo 1: setores; passo 2: "duas grandes possibilidades"; passos 3 e 4: cada caminho
 const sectors: { icon: IconName; name: string; color: string }[] = [

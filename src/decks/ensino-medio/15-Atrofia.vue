@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import Slide from '../deck/Slide.vue'
-import Icon from '../components/Icon.vue'
-import { useSteps } from '../deck/steps'
+import Slide from '../../deck/Slide.vue'
+import Icon from '../../components/Icon.vue'
+import { useSteps } from '../../deck/steps'
 
 // Passos: 1 = comparação "aprender ≠ evitar aprender"; 2 = mensagem-chave
 const { step } = useSteps()

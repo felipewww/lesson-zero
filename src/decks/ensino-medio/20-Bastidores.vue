@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import Slide from '../deck/Slide.vue'
-import { useSteps } from '../deck/steps'
-import chatgpt from '../assets/logos/chatgpt.svg'
-import claude from '../assets/logos/claude.svg'
+import Slide from '../../deck/Slide.vue'
+import { useSteps } from '../../deck/steps'
+import chatgpt from '../../assets/logos/chatgpt.svg'
+import claude from '../../assets/logos/claude.svg'
 
 // Passos: 1 = ferramentas; 2 = "do planejamento..."; 3 = frase sobre as decisões humanas
 const { step } = useSteps()

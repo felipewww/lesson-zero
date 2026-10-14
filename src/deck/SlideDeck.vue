@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, nextTick, onBeforeUnmount, onMounted, provide, reactive, ref, watch, type Component } from 'vue'
 import { stepsKey } from './steps'
+import DeckBackground from './DeckBackground.vue'
 
 /**
  * Exibe os slides ocupando 100% da largura e altura da janela, sobre um
@@ -15,8 +16,11 @@ import { stepsKey } from './steps'
  *  ←  ↓  PageUp  Backspace  passo / slide anterior
  *  Home / End               primeiro / último slide
  *  F                        tela cheia
+ *
+ * A URL guarda apresentação, slide e passo: #/<id>/<slide>/<passo>
  */
-const props = defineProps<{ slides: Component[] }>()
+const props = defineProps<{ id: string; slides: Component[]; theme?: Record<string, string> }>()
+const emit = defineEmits<{ home: [] }>()
 
 const deckEl = ref<HTMLElement>()
 const total = computed(() => props.slides.length)
@@ -57,7 +61,7 @@ function scanSteps() {
 function applySteps() {
   for (const { el, n } of stepEls) el.toggleAttribute('data-step-shown', step.value >= n)
   if (!Number.isFinite(step.value)) return
-  history.replaceState(null, '', `#/${index.value + 1}${step.value ? `/${step.value}` : ''}`)
+  history.replaceState(null, '', `#/${props.id}/${index.value + 1}${step.value ? `/${step.value}` : ''}`)
 }
 
 const progress = computed(() => {
@@ -74,7 +78,7 @@ function clamp(n: number) {
 }
 
 function readHash() {
-  const [slide, stepPart] = window.location.hash.replace(/^#\/?/, '').split('/')
+  const [, slide, stepPart] = window.location.hash.replace(/^#\/?/, '').split('/')
   const n = Number.parseInt(slide, 10)
   const s = Number.parseInt(stepPart, 10)
   return { slide: Number.isNaN(n) ? 0 : clamp(n - 1), step: Number.isNaN(s) ? 0 : Math.max(s, 0) }
@@ -162,6 +166,8 @@ function wake() {
 }
 
 function onHashChange() {
+  // Trocar de apresentação é com o App; aqui só navegação dentro desta
+  if (window.location.hash.replace(/^#\/?/, '').split('/')[0] !== props.id) return
   const { slide, step } = readHash()
   go(slide, step)
 }
@@ -185,13 +191,8 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  <main ref="deckEl" class="deck" :class="{ 'deck--idle': idle }" :style="{ '--progress': bgProgress }">
-    <div class="deck__bg" aria-hidden="true">
-      <span class="blob blob--1" />
-      <span class="blob blob--2" />
-      <span class="blob blob--3" />
-      <span class="grain" />
-    </div>
+  <main ref="deckEl" class="deck" :class="{ 'deck--idle': idle }" :style="theme">
+    <DeckBackground :progress="bgProgress" />
 
     <Transition :name="`slide-${direction}`">
       <component :is="current" :key="index" :data-slide="index" class="deck__slide" />
@@ -218,6 +219,14 @@ onBeforeUnmount(() => {
         <svg viewBox="0 0 24 24"><path d="M9 18l6-6-6-6" /></svg>
       </button>
       <span class="controls__sep" />
+      <button class="controls__btn" title="Escolher apresentação" @click="emit('home')">
+        <svg viewBox="0 0 24 24">
+          <rect width="7" height="7" x="3" y="3" rx="1" />
+          <rect width="7" height="7" x="14" y="3" rx="1" />
+          <rect width="7" height="7" x="3" y="14" rx="1" />
+          <rect width="7" height="7" x="14" y="14" rx="1" />
+        </svg>
+      </button>
       <button class="controls__btn" :title="isFullscreen ? 'Sair da tela cheia (F)' : 'Tela cheia (F)'" @click="toggleFullscreen">
         <svg v-if="!isFullscreen" viewBox="0 0 24 24">
           <path d="M8 3H5a2 2 0 0 0-2 2v3M16 3h3a2 2 0 0 1 2 2v3M8 21H5a2 2 0 0 1-2-2v-3M16 21h3a2 2 0 0 0 2-2v-3" />
@@ -232,6 +241,7 @@ onBeforeUnmount(() => {
 
 <style scoped>
 .deck {
+  font-family: var(--slide-font);
   position: fixed;
   inset: 0;
   width: 100vw;
@@ -248,72 +258,6 @@ onBeforeUnmount(() => {
 .deck__slide {
   position: absolute;
   inset: 0;
-}
-
-/* ---------- fundo animado ---------- */
-.deck__bg {
-  position: absolute;
-  inset: 0;
-  overflow: hidden;
-  pointer-events: none;
-}
-
-.blob {
-  position: absolute;
-  width: 60vmax;
-  height: 60vmax;
-  border-radius: 50%;
-  filter: blur(80px);
-  opacity: 0.35;
-  transition: translate 1.6s var(--ease-out);
-}
-
-.blob--1 {
-  background: var(--slide-accent);
-  top: -20vmax;
-  left: -15vmax;
-  translate: calc(var(--progress) * 70vw) calc(var(--progress) * 20vh);
-  animation: float 18s ease-in-out infinite;
-}
-
-.blob--2 {
-  background: var(--slide-accent-2);
-  bottom: -25vmax;
-  right: -20vmax;
-  translate: calc(var(--progress) * -60vw) calc(var(--progress) * -15vh);
-  animation: float 22s ease-in-out -6s infinite reverse;
-}
-
-.blob--3 {
-  background: var(--slide-accent-3);
-  width: 35vmax;
-  height: 35vmax;
-  top: 40%;
-  left: 40%;
-  opacity: 0.18;
-  translate: calc(var(--progress) * -30vw) calc(var(--progress) * 25vh);
-  animation: float 26s ease-in-out -12s infinite;
-}
-
-.grain {
-  position: absolute;
-  inset: 0;
-  background-image: radial-gradient(rgb(255 255 255 / 0.06) 1px, transparent 1px);
-  background-size: 3px 3px;
-  mask-image: radial-gradient(ellipse at center, #000 30%, transparent 80%);
-}
-
-@keyframes float {
-  0%,
-  100% {
-    transform: translate(0, 0) scale(1);
-  }
-  33% {
-    transform: translate(6vw, -4vh) scale(1.1);
-  }
-  66% {
-    transform: translate(-4vw, 5vh) scale(0.92);
-  }
 }
 
 /* ---------- progresso ---------- */
