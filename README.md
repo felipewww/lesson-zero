@@ -61,8 +61,8 @@ Canto inferior direito: voltar, contador de slides, pontos dos passos (preenchid
 
 | Tecla | Ação |
 |---|---|
-| → ↓ Espaço PageDown | próximo passo / slide |
-| ← ↑ PageUp Backspace | passo / slide anterior |
+| → ↑ Espaço PageDown | próximo passo / slide |
+| ← ↓ PageUp Backspace | passo / slide anterior |
 | Home / End | primeiro / último |
 | F | tela cheia |
 

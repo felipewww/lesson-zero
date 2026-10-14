@@ -11,8 +11,8 @@ import { stepsKey } from './steps'
  *
  * Controles no canto inferior direito (somem quando o mouse fica parado).
  * Teclado:
- *  →  ↓  Espaço  PageDown   próximo passo / slide
- *  ←  ↑  PageUp  Backspace  passo / slide anterior
+ *  →  ↑  Espaço  PageDown   próximo passo / slide
+ *  ←  ↓  PageUp  Backspace  passo / slide anterior
  *  Home / End               primeiro / último slide
  *  F                        tela cheia
  */
@@ -127,13 +127,13 @@ function onKey(e: KeyboardEvent) {
 
   switch (e.key) {
     case 'ArrowRight':
-    case 'ArrowDown':
+    case 'ArrowUp':
     case 'PageDown':
     case ' ':
       next()
       break
     case 'ArrowLeft':
-    case 'ArrowUp':
+    case 'ArrowDown':
     case 'PageUp':
     case 'Backspace':
       prev()
