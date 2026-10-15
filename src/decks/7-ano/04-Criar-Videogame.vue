@@ -3,7 +3,7 @@ import Slide from '../../deck/Slide.vue'
 import { useSteps } from '../../deck/steps'
 
 // Exemplo de como se define um jogo antes de programar.
-// Passos ímpares: a pergunta; passos pares: a resposta dela (as mesmas regras do slide 06)
+// Passos ímpares: a pergunta; passos pares: a resposta dela (as mesmas regras do slide 05)
 const { step } = useSteps()
 
 const questions = [
