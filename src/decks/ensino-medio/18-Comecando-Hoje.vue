@@ -39,7 +39,7 @@ const streaks = [
   { label: 'todo dia', on: () => true, tone: 'on' },
 ]
 
-// Os três grupos do slide 09 (mesmos ícones e cores), lembrados no card "Escolha uma área"
+// Os três grupos do slide 08 (mesmos ícones e cores), lembrados no card "Escolha uma área"
 const areas: { name: string; icon: IconName; color: string }[] = [
   { name: 'Aplicações', icon: 'layers', color: 'var(--slide-accent)' },
   { name: 'Dados e IA', icon: 'sparkles', color: 'var(--slide-accent-2)' },
@@ -200,7 +200,7 @@ const areas: { name: string; icon: IconName; color: string }[] = [
   color: var(--slide-muted);
 }
 
-/* áreas do slide 09, entram depois do card */
+/* áreas do slide 08, entram depois do card */
 .areas {
   grid-column: 2;
   display: flex;
