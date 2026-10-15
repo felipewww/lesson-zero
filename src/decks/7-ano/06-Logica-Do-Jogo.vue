@@ -3,25 +3,19 @@ import { computed, onBeforeUnmount, ref, watch } from 'vue'
 import Slide from '../../deck/Slide.vue'
 import Icon from '../../components/Icon.vue'
 import { useSteps } from '../../deck/steps'
-import { gameRules, hasGameRules } from './gameRules'
 
-// Passos 1..3: cada regra SE → ENTÃO; 4: o jogo roda usando as regras; 5 (se a turma escreveu regras no slide 07): as regras deles
-const { step } = useSteps()
-const PLAY = 4
+// Passos 1..4: cada regra SE → ENTÃO; 5: jogada que dá errado (fim de jogo);
+// 6: jogada que dá certo (pula os inimigos e chega na bandeira)
+const { step } = useSteps(6) // o passo 6 não tem elemento próprio: só troca a jogada
+const PLAY = 5
+const WIN = 6
 
 const rules = [
   { id: 'coin', when: 'pegar uma moeda', then: 'ganha 10 pontos', color: 'var(--slide-accent-2)' },
   { id: 'enemy', when: 'encostar no inimigo', then: 'perde uma vida', color: 'var(--slide-accent-3)' },
-  { id: 'over', when: 'ficar sem vidas', then: 'fim de jogo', color: 'var(--slide-accent)' },
+  { id: 'over', when: 'ficar sem vidas', then: 'fim de jogo', color: 'var(--slide-accent-3)' },
+  { id: 'win', when: 'chegar na bandeira', then: 'vence!', color: 'var(--slide-accent)' },
 ] as const
-
-const yours = computed(() =>
-  [
-    { label: 'pontos', text: gameRules.points },
-    { label: 'inimigo', text: gameRules.enemy },
-    { label: 'vencer ou perder', text: gameRules.end },
-  ].filter((r) => r.text.trim()),
-)
 
 // ---------- mini-jogo: o personagem corre pela fase e as regras disparam ----------
 type Item = { x: number; kind: 'coin' | 'enemy' }
@@ -33,8 +27,10 @@ const ITEMS: Item[] = [
   { x: 72, kind: 'enemy' },
   { x: 86, kind: 'coin' },
 ]
-const RUN_MS = 7000 // de x=4 a x=96
-const OVER_MS = 2200 // tempo mostrando "fim de jogo" antes de recomeçar
+const FLAG_X = 94
+const RUN_MS = 7000 // de x=4 até a bandeira
+const OVER_MS = 2200 // tempo mostrando "fim de jogo" / "você venceu" antes de recomeçar
+const JUMP_RANGE = 6 // na jogada certa, pula quando está a menos de 6% de um inimigo
 const START_LIVES = 2
 
 const heroX = ref(4)
@@ -44,6 +40,11 @@ const taken = ref<boolean[]>(ITEMS.map(() => false))
 const firing = ref<string | null>(null) // regra que acabou de disparar (acende na lista)
 const hurt = ref(false)
 const over = ref(false)
+const won = ref(false)
+const winning = computed(() => step.value >= WIN) // jogada 2: o jogador já sabe pular os inimigos
+const jumping = computed(
+  () => winning.value && !won.value && ITEMS.some((it) => it.kind === 'enemy' && Math.abs(heroX.value - it.x) < JUMP_RANGE),
+)
 
 let raf = 0
 let start = 0
@@ -55,6 +56,7 @@ function reset() {
   lives.value = START_LIVES
   taken.value = ITEMS.map(() => false)
   over.value = false
+  won.value = false
   hurt.value = false
 }
 
@@ -66,16 +68,17 @@ function fire(rule: string) {
 
 function tick(now: number) {
   const t = now - start
-  if (over.value) {
+  if (over.value || won.value) {
     if (t > OVER_MS) {
       reset()
       start = now
     }
   } else {
-    heroX.value = 4 + Math.min(t / RUN_MS, 1) * 92
+    heroX.value = 4 + Math.min(t / RUN_MS, 1) * (FLAG_X - 4)
     ITEMS.forEach((item, i) => {
       if (taken.value[i] || heroX.value < item.x) return
       taken.value[i] = true
+      if (item.kind === 'enemy' && winning.value) return // pulou por cima: nada acontece
       if (item.kind === 'coin') {
         score.value += 10
         fire('coin')
@@ -91,17 +94,19 @@ function tick(now: number) {
         }
       }
     })
-    if (t > RUN_MS + 800) {
-      reset()
+    if (heroX.value >= FLAG_X) {
+      won.value = true
       start = now
+      fire('win')
     }
   }
   raf = requestAnimationFrame(tick)
 }
 
 watch(
-  () => step.value >= PLAY,
-  (playing) => {
+  () => (step.value >= WIN ? 'win' : step.value >= PLAY ? 'lose' : 'off'),
+  (mode) => {
+    const playing = mode !== 'off'
     cancelAnimationFrame(raf)
     reset()
     if (playing) {
@@ -122,7 +127,7 @@ onBeforeUnmount(() => {
   <Slide>
     <div class="layout" :class="{ 'is-playing': step >= PLAY }">
       <header class="head">
-        <p v-reveal:fade class="kicker">você criou a lógica de um jogo!</p>
+        <p v-reveal:fade class="kicker">essa é a lógica de um jogo!</p>
         <h1 v-reveal:blur="150" class="title">
           <span class="chip chip--if">SE</span> acontecer isso <span class="arrow">→</span>
           <span class="chip chip--then">ENTÃO</span> faça aquilo.
@@ -145,9 +150,12 @@ onBeforeUnmount(() => {
         </li>
       </ul>
 
-      <div v-step:zoom="PLAY" class="game" :class="{ 'is-over': over }" aria-hidden="true">
+      <div v-step:zoom="PLAY" class="game" :class="{ 'is-over': over, 'is-won': won }" aria-hidden="true">
         <div class="hud">
           <span class="hud__score">★ {{ score }} pts</span>
+          <span class="hud__try" :class="winning ? 'is-good' : 'is-bad'">
+            {{ winning ? 'jogada 2 · dando certo' : 'jogada 1 · dando errado' }}
+          </span>
           <span class="hud__lives">
             <Icon v-for="n in START_LIVES" :key="n" name="heart" :class="{ 'is-lost': n > lives }" />
           </span>
@@ -161,22 +169,16 @@ onBeforeUnmount(() => {
               <i class="eye" /><i class="eye" />
             </span>
           </template>
-          <span class="hero" :class="{ 'is-hurt': hurt }" :style="{ left: `${heroX}%` }">
+          <span class="flag" :style="{ left: `${FLAG_X}%` }"><i class="flag__cloth" /></span>
+          <span class="hero" :class="{ 'is-hurt': hurt, 'is-jumping': jumping }" :style="{ left: `${heroX}%` }">
             <i class="eye" /><i class="eye" />
           </span>
         </div>
 
         <div class="over">FIM DE JOGO</div>
+        <div class="over over--win">VOCÊ VENCEU!</div>
       </div>
 
-      <section v-if="hasGameRules" v-step class="yours">
-        <span class="yours__label">as regras de vocês</span>
-        <ul>
-          <li v-for="r in yours" :key="r.label">
-            <span class="yours__key">{{ r.label }}</span>{{ r.text }}
-          </li>
-        </ul>
-      </section>
     </div>
   </Slide>
 </template>
@@ -309,6 +311,25 @@ onBeforeUnmount(() => {
   font-variant-numeric: tabular-nums;
 }
 
+.hud__try {
+  padding: 0.2em 0.8em;
+  border-radius: 999px;
+  font-size: 0.7em;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.hud__try.is-bad {
+  color: var(--slide-accent-3);
+  background: color-mix(in srgb, var(--slide-accent-3) 15%, transparent);
+}
+
+.hud__try.is-good {
+  color: var(--slide-accent);
+  background: color-mix(in srgb, var(--slide-accent) 15%, transparent);
+}
+
 .hud__lives {
   display: flex;
   gap: 0.3em;
@@ -409,6 +430,40 @@ onBeforeUnmount(() => {
   to { bottom: 12px; }
 }
 
+/* pulo por cima do inimigo (jogada 2) */
+.hero {
+  transition: translate 0.25s var(--ease-out);
+}
+
+.hero.is-jumping {
+  translate: -50% calc(var(--u) * -1.4);
+}
+
+.flag {
+  position: absolute;
+  bottom: 6px;
+  width: 4px;
+  height: calc(var(--u) * 1.9);
+  border-radius: 2px;
+  background: var(--slide-fg);
+}
+
+.flag__cloth {
+  position: absolute;
+  top: 0;
+  left: 4px;
+  width: calc(var(--u) * 0.8);
+  height: calc(var(--u) * 0.55);
+  background: var(--slide-accent);
+  clip-path: polygon(0 0, 100% 50%, 0 100%);
+  transform-origin: left center;
+  animation: wave 1s ease-in-out infinite alternate;
+}
+
+@keyframes wave {
+  to { scale: 0.85 1.08; }
+}
+
 .hero.is-hurt {
   animation: hurt 0.12s steps(2) 5;
 }
@@ -445,38 +500,14 @@ onBeforeUnmount(() => {
   pointer-events: none;
 }
 
-.game.is-over .over {
+.over--win {
+  color: var(--slide-accent);
+}
+
+.game.is-over .over:not(.over--win),
+.game.is-won .over--win {
   opacity: 1;
   scale: 1;
-}
-
-/* ---------- regras que a turma escreveu no slide 07 ---------- */
-.yours {
-  grid-column: 1 / -1;
-  padding: 0.8em 1.1em;
-  border-radius: 18px;
-  font-size: calc(var(--text-base) * 0.85);
-  border: 2px dashed color-mix(in srgb, var(--slide-accent-2) 50%, transparent);
-  background: color-mix(in srgb, var(--slide-accent-2) 7%, transparent);
-}
-
-.yours__label {
-  font-weight: 800;
-  color: var(--slide-accent-2);
-}
-
-.yours ul {
-  list-style: none;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.4em 1.6em;
-  margin-top: 0.3em;
-}
-
-.yours__key {
-  margin-right: 0.5em;
-  font-size: 0.8em;
-  color: var(--slide-muted);
 }
 
 @media (max-aspect-ratio: 1 / 1) {

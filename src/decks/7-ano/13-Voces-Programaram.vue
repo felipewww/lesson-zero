@@ -4,7 +4,7 @@ import Slide from '../../deck/Slide.vue'
 import { useSteps } from '../../deck/steps'
 import { EXAMPLE_PROGRAM, robotProgram, type RobotCommand } from './robotProgram'
 
-// Passo 1: os comandos da atividade viram blocos; passo 2: o robozinho executa o programa
+// Passo 1: os comandos da atividade viram blocos; passo 2: o robozinho executa e sempre pega o objeto
 const { step } = useSteps()
 const RUN = 2
 
@@ -32,19 +32,56 @@ function blockLabel(b: { cmd: RobotCommand; count: number }) {
   return 'Pegue o objeto'
 }
 
-// ---------- mundo: grade 5x5, robô começa embaixo olhando para cima ----------
-const SIZE = 5
-const START = { x: 1, y: 4, dir: 0 } // dir: 0 cima, 1 direita, 2 baixo, 3 esquerda
-const OBJECT = { x: 2, y: 2 }
+// ---------- mundo ----------
+// A turma só chega aqui depois que o robô humano conseguiu, então o robozinho
+// também sempre consegue: o objeto fica onde o programa termina ("Pegue o objeto")
+// e a grade cresce para caber o caminho inteiro.
+const MIN_SIZE = 5
 const DELTA = [
   [0, -1],
   [1, 0],
   [0, 1],
   [-1, 0],
-]
+] // dir: 0 cima, 1 direita, 2 baixo, 3 esquerda
 
-const robot = reactive({ ...START, turns: 0, bump: false })
-const run = reactive({ at: -1, done: false, result: '' as '' | 'ok' | 'miss', holding: false })
+const world = computed(() => {
+  let x = 0
+  let y = 0
+  let dir = 0
+  let target = { x: 0, y: 0 }
+  const seen = [{ x, y }]
+  for (const cmd of commands.value) {
+    if (cmd === 'forward') {
+      x += DELTA[dir][0]
+      y += DELTA[dir][1]
+      seen.push({ x, y })
+    } else if (cmd === 'right') dir = (dir + 1) % 4
+    else if (cmd === 'left') dir = (dir + 3) % 4
+    else target = { x, y }
+  }
+  if (!commands.value.includes('grab')) target = { x, y }
+
+  const xs = seen.map((p) => p.x)
+  const ys = seen.map((p) => p.y)
+  const minX = Math.min(...xs)
+  const minY = Math.min(...ys)
+  const width = Math.max(...xs) - minX + 1
+  const height = Math.max(...ys) - minY + 1
+  const cols = Math.max(MIN_SIZE, width)
+  const rows = Math.max(MIN_SIZE, height)
+  // centraliza o caminho na grade
+  const ox = Math.floor((cols - width) / 2) - minX
+  const oy = Math.floor((rows - height) / 2) - minY
+  return {
+    cols,
+    rows,
+    start: { x: ox, y: oy, dir: 0 },
+    object: { x: target.x + ox, y: target.y + oy },
+  }
+})
+
+const robot = reactive({ x: 0, y: 0, dir: 0, turns: 0 })
+const run = reactive({ at: -1, done: false, holding: false })
 
 const activeBlock = computed(() => {
   if (run.at < 0) return -1
@@ -59,29 +96,25 @@ let timer: number | undefined
 
 function reset() {
   clearTimeout(timer)
-  Object.assign(robot, START, { turns: 0, bump: false })
-  Object.assign(run, { at: -1, done: false, result: '', holding: false })
+  Object.assign(robot, world.value.start, { turns: 0 })
+  Object.assign(run, { at: -1, done: false, holding: false })
+}
+
+function grabIfThere() {
+  const { object } = world.value
+  if (robot.x === object.x && robot.y === object.y) run.holding = true
 }
 
 function exec(cmd: RobotCommand) {
-  robot.bump = false
   if (cmd === 'forward') {
-    const [dx, dy] = DELTA[robot.dir]
-    const nx = robot.x + dx
-    const ny = robot.y + dy
-    if (nx < 0 || ny < 0 || nx >= SIZE || ny >= SIZE) robot.bump = true
-    else Object.assign(robot, { x: nx, y: ny })
+    Object.assign(robot, { x: robot.x + DELTA[robot.dir][0], y: robot.y + DELTA[robot.dir][1] })
   } else if (cmd === 'right') {
     robot.dir = (robot.dir + 1) % 4
     robot.turns++
   } else if (cmd === 'left') {
     robot.dir = (robot.dir + 3) % 4
     robot.turns--
-  } else {
-    const hit = robot.x === OBJECT.x && robot.y === OBJECT.y
-    run.holding = hit
-    run.result = hit ? 'ok' : 'miss'
-  }
+  } else grabIfThere()
 }
 
 function play() {
@@ -89,8 +122,8 @@ function play() {
   const list = commands.value
   const tick = (i: number) => {
     if (i >= list.length) {
+      grabIfThere() // sem "Pegue o objeto", pega ao terminar o caminho
       run.done = true
-      if (!run.result) run.result = 'miss'
       return
     }
     run.at = i
@@ -126,7 +159,7 @@ onBeforeUnmount(() => clearTimeout(timer))
       <div class="work">
         <div v-step class="code">
           <span class="code__label">{{ usingExample ? 'exemplo de programa' : 'o programa da turma' }}</span>
-          <div class="blocks">
+          <div class="blocks" :class="{ 'is-long': blocks.length > 6 }" :style="{ '--half': Math.ceil(blocks.length / 2) }">
             <div
               v-for="(b, i) in blocks"
               :key="i"
@@ -140,18 +173,17 @@ onBeforeUnmount(() => clearTimeout(timer))
         </div>
 
         <div v-step:zoom="RUN" class="world">
-          <div class="grid" :style="{ '--size': SIZE }">
-            <span v-for="n in SIZE * SIZE" :key="n" class="cell" />
+          <div class="grid" :style="{ '--cols': world.cols, '--rows': world.rows }">
+            <span v-for="n in world.cols * world.rows" :key="n" class="cell" />
             <span
               class="object"
               :class="{ 'is-taken': run.holding }"
-              :style="{ '--x': OBJECT.x, '--y': OBJECT.y }"
+              :style="{ '--x': world.object.x, '--y': world.object.y }"
             >
               ⭐
             </span>
             <span
               class="robot"
-              :class="{ 'is-bump': robot.bump }"
               :style="{ '--x': robot.x, '--y': robot.y, '--turn': `${robot.turns * 90}deg` }"
             >
               <svg viewBox="0 0 40 40" aria-hidden="true">
@@ -163,9 +195,8 @@ onBeforeUnmount(() => clearTimeout(timer))
             </span>
           </div>
 
-          <p class="result" :class="`is-${run.result || 'idle'}`">
-            <template v-if="run.result === 'ok'">Conseguiu! 🎉</template>
-            <template v-else-if="run.result === 'miss'">Ops! O robô fez exatamente o que mandaram…</template>
+          <p class="result" :class="{ 'is-ok': run.holding }">
+            <template v-if="run.holding">Conseguiu! 🎉</template>
             <template v-else>executando…</template>
           </p>
 
@@ -276,6 +307,16 @@ onBeforeUnmount(() => clearTimeout(timer))
   overflow: auto;
 }
 
+/* programas longos: duas pilhas lado a lado para caber sem rolagem */
+.blocks.is-long {
+  display: grid;
+  grid-auto-flow: column;
+  grid-template-rows: repeat(var(--half), auto);
+  justify-content: start;
+  column-gap: 1.2em;
+  font-size: 0.85em;
+}
+
 /* bloco estilo Scratch, com "dente" de encaixe em cima */
 .block {
   --c: var(--slide-accent);
@@ -345,11 +386,12 @@ onBeforeUnmount(() => clearTimeout(timer))
 }
 
 .grid {
-  --cell: min(8.4vh, 6vw);
+  /* 5x5 ocupa ~42vh; grades maiores encolhem as células para caber */
+  --cell: min(calc(42vh / var(--rows)), calc(30vw / var(--cols)));
   position: relative;
   display: grid;
-  grid-template-columns: repeat(var(--size), var(--cell));
-  grid-template-rows: repeat(var(--size), var(--cell));
+  grid-template-columns: repeat(var(--cols), var(--cell));
+  grid-template-rows: repeat(var(--rows), var(--cell));
   gap: 4px;
   padding: 4px;
   border-radius: 16px;
@@ -398,15 +440,6 @@ onBeforeUnmount(() => clearTimeout(timer))
   filter: drop-shadow(0 6px 12px color-mix(in srgb, var(--slide-accent) 60%, transparent));
 }
 
-.robot.is-bump svg {
-  animation: bump 0.4s;
-}
-
-@keyframes bump {
-  25% { translate: -4px 0; }
-  75% { translate: 4px 0; }
-}
-
 .robot__nose { fill: var(--slide-accent-2); }
 .robot__body { fill: var(--slide-accent); }
 .robot__eye { fill: var(--slide-bg); }
@@ -421,10 +454,6 @@ onBeforeUnmount(() => clearTimeout(timer))
 
 .result.is-ok {
   color: var(--slide-accent);
-}
-
-.result.is-miss {
-  color: var(--slide-accent-3);
 }
 
 .replay {

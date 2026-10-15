@@ -3,9 +3,10 @@ import { computed, onBeforeUnmount, reactive, watch } from 'vue'
 import Slide from '../../deck/Slide.vue'
 import { useSteps } from '../../deck/steps'
 
-// Passos: 1..3 = uma fase por vez; 4 = frase de destaque
+// Passos: 1..3 = uma fase por vez; 4 = conclusão (mesmos obstáculos); 5 = frase de destaque
 const { step } = useSteps()
-const KEY = 4
+const CONCLUSION = 4
+const KEY = 5
 
 /**
  * As três fases têm os MESMOS obstáculos, nas mesmas posições.
@@ -23,10 +24,31 @@ const PAUSE: Record<Kind, number> = { hit: 650, jump: 280, fast: 0 }
 const LIVES = 3
 const SCAN = 600 // na fase 3 os padrões acendem antes da corrida
 
-const phases: { label: string; kinds: Kind[]; result: string; tone: 'lose' | 'ok' | 'win'; delay: number }[] = [
-  { label: 'Fase 1', kinds: ['hit', 'hit', 'hit', 'hit', 'hit', 'hit'], result: 'game over', tone: 'lose', delay: 0 },
-  { label: 'Fase 2', kinds: ['jump', 'hit', 'jump', 'jump', 'hit', 'jump'], result: 'passou!', tone: 'ok', delay: 0 },
-  { label: 'Fase 3', kinds: ['fast', 'fast', 'fast', 'fast', 'fast', 'fast'], result: 'perfeito!', tone: 'win', delay: SCAN },
+const phases: { label: string; tip: string; kinds: Kind[]; result: string; tone: 'lose' | 'ok' | 'win'; delay: number }[] = [
+  {
+    label: 'Fase 1',
+    tip: 'Tudo é novo. Você erra bastante.',
+    kinds: ['hit', 'hit', 'hit', 'hit', 'hit', 'hit'],
+    result: 'game over',
+    tone: 'lose',
+    delay: 0,
+  },
+  {
+    label: 'Fase 2',
+    tip: 'Alguns obstáculos você já conhece.',
+    kinds: ['jump', 'hit', 'jump', 'jump', 'hit', 'jump'],
+    result: 'passou!',
+    tone: 'ok',
+    delay: 0,
+  },
+  {
+    label: 'Fase 3',
+    tip: 'Você reconhece os padrões!',
+    kinds: ['fast', 'fast', 'fast', 'fast', 'fast', 'fast'],
+    result: 'perfeito!',
+    tone: 'win',
+    delay: SCAN,
+  },
 ]
 
 /** Linha do tempo de uma fase; acaba antes se as vidas terminarem. */
@@ -127,13 +149,13 @@ onBeforeUnmount(() => rafs.forEach(cancelAnimationFrame))
   <Slide>
     <div class="stage" :class="{ 'is-open': step >= 1, 'is-key': step >= KEY }">
       <header class="head">
-        <h1 class="title">
-          <span v-reveal:blur>Seu cérebro</span>
-          <span v-reveal:blur="250" class="title__grad">melhora com a prática.</span>
+        <p v-reveal:fade class="kicker">a habilidade mais importante</p>
+        <h1 class="hero">
+          <span v-reveal:blur="200">Aprender</span>
+          <span v-reveal:zoom="500" class="hero__a">a</span>
+          <span class="hero__grad">aprender</span>
         </h1>
-        <p v-reveal="600" class="sub">
-          Quanto mais você aprende e enfrenta desafios, mais conhecimento terá para resolver problemas novos.
-        </p>
+        <p class="sub">Seu cérebro <em>melhora com a prática</em>.</p>
       </header>
 
       <div class="lanes">
@@ -146,6 +168,7 @@ onBeforeUnmount(() => rafs.forEach(cancelAnimationFrame))
         >
           <div class="hud">
             <span class="hud__label">{{ phase.label }}</span>
+            <span class="hud__tip">{{ phase.tip }}</span>
             <span class="hud__lives">
               <svg v-for="n in LIVES" :key="n" class="heart" :class="{ 'is-lost': n > livesLeft(li) }" viewBox="0 0 24 24">
                 <path
@@ -188,6 +211,10 @@ onBeforeUnmount(() => rafs.forEach(cancelAnimationFrame))
         </div>
       </div>
 
+      <p v-step="CONCLUSION" class="conclusion">
+        <span>Os obstáculos são os <strong>mesmos</strong>. Quem melhorou foi <em>você</em>!</span>
+      </p>
+
       <p v-step:blur="KEY" class="key">
         <span class="key__a">Aprender também é uma <em>habilidade</em>.</span>
         <span class="key__b">E precisa ser <mark>treinada</mark>.</span>
@@ -214,52 +241,103 @@ onBeforeUnmount(() => rafs.forEach(cancelAnimationFrame))
     opacity 0.8s var(--ease-out);
 }
 
-.title {
+.kicker {
+  font-size: calc(var(--text-base) * 0.75);
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--slide-muted);
+}
+
+.hero {
   display: flex;
-  flex-direction: column;
-  align-items: center;
-  font-size: var(--text-hero);
-  line-height: 1.02;
-  font-weight: 800;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: baseline;
+  gap: 0 0.28em;
+  margin-top: 0.15em;
+  font-size: calc(var(--text-hero) * 1.15);
+  line-height: 1.05;
+  font-weight: 900;
   letter-spacing: -0.03em;
   text-transform: uppercase;
   transition: font-size 0.8s var(--ease-out);
 }
 
-.title__grad {
+.is-open .hero {
+  font-size: var(--text-title);
+}
+
+.hero__a {
+  font-weight: 300;
+  color: var(--slide-muted);
+}
+
+.hero__grad {
   padding-bottom: 0.08em;
-  background: linear-gradient(110deg, var(--slide-accent), var(--slide-accent-2) 55%, var(--slide-accent-3));
+  background: linear-gradient(120deg, var(--slide-accent), var(--slide-accent-2), var(--slide-accent-3), var(--slide-accent));
+  background-size: 300% 100%;
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
+  animation:
+    reveal-blur 0.9s var(--ease-out) 800ms backwards,
+    shimmer 6s linear infinite;
 }
 
-.is-open .title {
-  flex-direction: row;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 0 0.3em;
-  font-size: calc(var(--text-title) * 0.8);
+@keyframes shimmer {
+  to {
+    background-position: 300% 0;
+  }
 }
 
+/* frase de apoio: aparece quando o jogo começa */
 .sub {
-  max-width: 34em;
-  margin: 0.8em auto 0;
-  font-size: calc(var(--text-base) * 1.05);
+  max-height: 0;
+  opacity: 0;
+  overflow: hidden;
+  font-size: calc(var(--text-base) * 1.2);
+  font-weight: 600;
   color: var(--slide-muted);
-  text-wrap: balance;
   transition:
     max-height 0.8s var(--ease-out),
-    opacity 0.5s,
+    opacity 0.6s 0.3s,
     margin 0.8s var(--ease-out);
-  max-height: 5em;
-  overflow: hidden;
+}
+
+.sub em {
+  font-style: normal;
+  color: var(--slide-accent-2);
 }
 
 .is-open .sub {
-  max-height: 0;
-  opacity: 0;
-  margin-top: 0;
+  max-height: 3em;
+  opacity: 1;
+  margin-top: 0.3em;
+}
+
+/* ---------- conclusão (passo 4) ---------- */
+.conclusion {
+  text-align: center;
+  transition:
+    opacity 0.6s var(--ease-out),
+    transform 0.6s var(--ease-out),
+    filter 0.8s var(--ease-out);
+  font-size: calc(var(--text-base) * 1.3);
+  font-weight: 700;
+}
+
+.conclusion > span {
+  text-wrap: balance;
+}
+
+.conclusion strong {
+  color: var(--slide-accent-3);
+}
+
+.conclusion em {
+  font-style: normal;
+  color: var(--slide-accent-2);
 }
 
 /* ---------- as três fases ---------- */
@@ -280,7 +358,7 @@ onBeforeUnmount(() => rafs.forEach(cancelAnimationFrame))
 
 .lane {
   display: grid;
-  grid-template-columns: 6.5em minmax(0, 1fr) 7em;
+  grid-template-columns: minmax(0, 0.75fr) minmax(0, 2fr) 7em;
   align-items: center;
   gap: clamp(12px, 2vw, 32px);
   padding: clamp(10px, 1.8vh, 22px) clamp(14px, 2vw, 32px);
@@ -310,6 +388,13 @@ onBeforeUnmount(() => rafs.forEach(cancelAnimationFrame))
   font-weight: 800;
   text-transform: uppercase;
   letter-spacing: 0.04em;
+}
+
+.hud__tip {
+  font-size: calc(var(--text-base) * 0.8);
+  line-height: 1.25;
+  color: var(--slide-muted);
+  text-wrap: balance;
 }
 
 .hud__lives {
@@ -513,7 +598,8 @@ onBeforeUnmount(() => rafs.forEach(cancelAnimationFrame))
 
 /* ---------- frase de destaque ---------- */
 .is-key .head,
-.is-key .lanes {
+.is-key .lanes,
+.is-key .conclusion {
   filter: blur(8px);
   opacity: 0.12;
 }

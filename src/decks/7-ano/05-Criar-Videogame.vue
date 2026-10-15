@@ -1,30 +1,25 @@
 <script setup lang="ts">
 import Slide from '../../deck/Slide.vue'
 import { useSteps } from '../../deck/steps'
-import { gameRules } from './gameRules'
 
-// Passos 1..3: uma pergunta por vez; cada uma tem um campo para escrever a regra que a turma decidir
+// Exemplo de como se define um jogo antes de programar.
+// Passos ímpares: a pergunta; passos pares: a resposta dela (as mesmas regras do slide 06)
 const { step } = useSteps()
 
-const questions: { key: keyof typeof gameRules; text: string; color: string; glyph: string }[] = [
-  { key: 'points', text: 'Como o jogador ganha pontos?', color: 'var(--slide-accent-2)', glyph: '★' },
-  { key: 'enemy', text: 'O que acontece quando encosta em um inimigo?', color: 'var(--slide-accent-3)', glyph: '!' },
-  { key: 'end', text: 'Como o jogador vence ou perde?', color: 'var(--slide-accent)', glyph: '⚑' },
+const questions = [
+  { text: 'Como o jogador ganha pontos?', answer: 'Pegando moedas: cada uma vale 10 pontos.', color: 'var(--slide-accent-2)', glyph: '★' },
+  { text: 'O que acontece quando encosta em um inimigo?', answer: 'Perde uma vida.', color: 'var(--slide-accent-3)', glyph: '!' },
+  { text: 'Como o jogador vence ou perde?', answer: 'Vence chegando na bandeira. Perde se ficar sem vidas.', color: 'var(--slide-accent)', glyph: '⚑' },
 ]
-
-// Enter ou Esc tira o foco do campo para as setas voltarem a navegar
-function release(e: KeyboardEvent) {
-  ;(e.target as HTMLElement).blur()
-}
 </script>
 
 <template>
   <Slide>
     <div class="layout">
       <header class="head">
-        <span v-reveal:zoom class="badge">desafio</span>
-        <h1 v-reveal:blur="150" class="title">Vocês são os <em>criadores</em> do jogo!</h1>
-        <p v-reveal="350" class="lead">Pegue as moedas. Fuja dos inimigos.</p>
+        <span v-reveal:zoom class="badge">exemplo</span>
+        <h1 v-reveal:blur="150" class="title">O que é <em>lógica</em>?</h1>
+        <p v-reveal="350" class="lead">Imagine um jogo: pegue as moedas e fuja dos inimigos.</p>
       </header>
 
       <div v-reveal:zoom="450" class="scene" aria-hidden="true">
@@ -40,6 +35,12 @@ function release(e: KeyboardEvent) {
               <ellipse class="coin__body" rx="9" ry="9" />
               <text class="coin__mark" y="4" text-anchor="middle">$</text>
             </g>
+          </g>
+
+          <!-- bandeira de chegada -->
+          <g class="flag" transform="translate(326 105)">
+            <rect class="flag__pole" x="-1.5" y="-46" width="3" height="46" rx="1.5" />
+            <path class="flag__cloth" d="M1.5 -46 L26 -38 L1.5 -30 Z" />
           </g>
 
           <!-- inimigo patrulhando -->
@@ -76,23 +77,16 @@ function release(e: KeyboardEvent) {
       <ol class="questions">
         <li
           v-for="(q, i) in questions"
-          :key="q.key"
-          v-step:left
+          :key="q.text"
+          v-step:left="i * 2 + 1"
           class="q"
-          :class="{ 'is-current': step === i + 1 }"
+          :class="{ 'is-current': step === i * 2 + 1 || step === i * 2 + 2 }"
           :style="{ '--c': q.color }"
         >
           <span class="q__glyph">{{ q.glyph }}</span>
           <div class="q__body">
             <p class="q__text">{{ q.text }}</p>
-            <input
-              v-model="gameRules[q.key]"
-              class="q__input"
-              type="text"
-              placeholder="a turma decide…"
-              @keydown.enter="release"
-              @keydown.esc="release"
-            />
+            <p v-step:fade="i * 2 + 2" class="q__answer">{{ q.answer }}</p>
           </div>
         </li>
       </ol>
@@ -234,6 +228,21 @@ function release(e: KeyboardEvent) {
   70% { translate: 40px 0; }
 }
 
+.flag__pole {
+  fill: var(--slide-fg);
+}
+
+.flag__cloth {
+  fill: var(--slide-accent-3);
+  transform-box: fill-box;
+  transform-origin: left center;
+  animation: wave 1.2s ease-in-out infinite alternate;
+}
+
+@keyframes wave {
+  to { scale: 0.85 1.08; }
+}
+
 .hud rect {
   fill: color-mix(in srgb, var(--slide-bg) 80%, transparent);
 }
@@ -244,7 +253,7 @@ function release(e: KeyboardEvent) {
   fill: var(--slide-accent-2);
 }
 
-/* ---------- perguntas com campo editável ---------- */
+/* ---------- perguntas e respostas ---------- */
 .questions {
   list-style: none;
   display: flex;
@@ -296,31 +305,13 @@ function release(e: KeyboardEvent) {
   text-wrap: balance;
 }
 
-.q__input {
-  width: 100%;
-  margin-top: 0.5em;
-  padding: 0.45em 0.7em;
-  border: 0;
-  border-bottom: 2px dashed color-mix(in srgb, var(--c) 60%, transparent);
-  border-radius: 8px 8px 0 0;
-  background: rgb(255 255 255 / 0.04);
-  color: var(--c);
-  font: inherit;
-  font-size: 0.95em;
+.q__answer {
+  margin-top: 0.45em;
+  padding-left: 0.8em;
+  border-left: 3px solid var(--c);
   font-weight: 600;
-  outline: none;
-  transition: background 0.3s;
-}
-
-.q__input::placeholder {
-  color: var(--slide-muted);
-  font-weight: 400;
-  opacity: 0.7;
-}
-
-.q__input:focus {
-  background: rgb(255 255 255 / 0.09);
-  border-bottom-style: solid;
+  color: var(--c);
+  text-wrap: balance;
 }
 
 @media (max-aspect-ratio: 1 / 1) {
