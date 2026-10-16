@@ -3,14 +3,14 @@ import Slide from '../../deck/Slide.vue'
 import Icon from '../../components/Icon.vue'
 import { useSteps } from '../../deck/steps'
 
-// Passos: 1 = comparação "aprender ≠ evitar aprender"; 2 = mensagem-chave
-const { step } = useSteps()
-const KEY_MESSAGE = 2
+// Passos: 1 = comparação "aprender ≠ evitar aprender"; 2 = o teste (explicar o que a IA fez)
+const { step } = useSteps(2) // o passo 2 (o teste) é controlado pela classe is-test
+const TEST = 2
 </script>
 
 <template>
   <Slide>
-    <div class="stage" :class="{ 'is-key': step >= KEY_MESSAGE }">
+    <div class="stage" :class="{ 'is-test': step >= TEST }">
       <div class="top">
         <div class="head">
           <p v-reveal:fade class="kicker">o perigo da IA: <strong>atrofia cognitiva</strong></p>
@@ -42,9 +42,11 @@ const KEY_MESSAGE = 2
         </article>
       </div>
 
-      <p v-step:blur class="key">
-        <span>Use IA como <em>tutor particular</em>, não como substituto do seu próprio raciocínio.</span>
+      <p class="test" :class="{ 'is-shown': step >= TEST }">
+        <span class="test__a">Se você não sabe <em>explicar</em> o que a IA fez,</span>
+        <span class="test__b">você <strong>não aprendeu nada</strong>.</span>
       </p>
+
     </div>
   </Slide>
 </template>
@@ -257,34 +259,75 @@ const KEY_MESSAGE = 2
     opacity 0.8s var(--ease-out);
 }
 
-.is-key .top,
-.is-key .compare {
-  filter: blur(6px);
-  opacity: 0.15;
+
+.is-test .top,
+.is-test .compare {
+  filter: blur(8px);
+  opacity: 0.12;
 }
 
-.key {
+/* o teste: aparece sozinho no passo 2 e sai quando entra a mensagem-chave */
+.test {
   position: absolute;
   inset: 0;
-  display: grid;
-  place-items: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.3em;
   padding: 0 6vw;
   text-align: center;
-  font-size: calc(var(--text-title) * 0.95);
-  line-height: 1.1;
+  pointer-events: none;
+  opacity: 0;
+  scale: 0.96;
+  filter: blur(12px);
+  transition:
+    opacity 0.7s var(--ease-out),
+    scale 0.7s var(--ease-out),
+    filter 0.7s var(--ease-out);
+}
+
+.test.is-shown {
+  opacity: 1;
+  scale: 1;
+  filter: blur(0);
+}
+
+.test__a {
+  font-size: calc(var(--text-title) * 0.75);
+  line-height: 1.15;
+  font-weight: 700;
+  color: var(--slide-muted);
+  text-wrap: balance;
+}
+
+.test__a em {
+  font-style: normal;
+  color: var(--slide-fg);
+}
+
+.test__b {
+  font-size: calc(var(--text-title) * 1.15);
+  line-height: 1.05;
   font-weight: 800;
   letter-spacing: -0.03em;
 }
 
-.key > span {
-  text-wrap: balance;
+.test__b strong {
+  color: var(--slide-accent-3);
 }
 
-.key em {
-  font-style: normal;
-  background: linear-gradient(120deg, var(--slide-accent), var(--slide-accent-2), var(--slide-accent-3));
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
+.test.is-shown .test__b {
+  animation: thud 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) 0.45s backwards;
 }
+
+@keyframes thud {
+  from {
+    opacity: 0;
+    scale: 1.25;
+  }
+}
+
+
+
 </style>

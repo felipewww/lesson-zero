@@ -4,10 +4,8 @@ import Slide from '../../deck/Slide.vue'
 import Icon from '../../components/Icon.vue'
 import { useSteps } from '../../deck/steps'
 
-// Passos: 1..3 = um desafio por vez; 4 = conclusão; 5 = frase de destaque
+// Passos: 1..3 = um desafio por vez
 const { step } = useSteps()
-const CONCLUSION = 4
-const KEY = 5
 
 /**
  * Os três desafios têm os MESMOS obstáculos, nas mesmas posições.
@@ -114,7 +112,7 @@ onBeforeUnmount(() => rafs.forEach(cancelAnimationFrame))
 
 <template>
   <Slide>
-    <div class="stage" :class="{ 'is-open': step >= 1, 'is-key': step >= KEY }">
+    <div class="stage" :class="{ 'is-open': step >= 1 }">
       <header class="head">
         <p v-reveal:fade class="kicker">a habilidade mais importante do futuro</p>
         <h1 class="hero">
@@ -162,18 +160,8 @@ onBeforeUnmount(() => rafs.forEach(cancelAnimationFrame))
           <span class="lane__time" :class="{ 'is-final': elapsed[li] >= plans[li].total }">{{ runTime(li) }}</span>
         </div>
 
-        <p v-step="CONCLUSION" class="conclusion">
-          <span class="conclusion__same">mesmos obstáculos</span>
-          <span class="conclusion__text">
-            Quanto mais você <em>exercita</em> essa capacidade, mais facilidade tende a ter para aprender.
-          </span>
-        </p>
       </div>
 
-      <p v-step:blur="KEY" class="key">
-        <span class="key__a">Aprender também é uma <em>habilidade</em>.</span>
-        <span class="key__b">E, como qualquer habilidade, precisa ser <mark>treinada</mark>.</span>
-      </p>
     </div>
   </Slide>
 </template>
@@ -467,102 +455,6 @@ onBeforeUnmount(() => rafs.forEach(cancelAnimationFrame))
 .lane__time.is-final {
   color: var(--slide-fg);
   font-weight: 700;
-}
-
-/* ---------- conclusão (passo 4) ---------- */
-.conclusion {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-wrap: wrap;
-  gap: 0.6em 1.2em;
-  margin-top: 1vh;
-  text-align: center;
-}
-
-.conclusion__same {
-  padding: 0.35em 0.9em;
-  border-radius: 999px;
-  font-family: var(--slide-font-mono);
-  font-size: calc(var(--text-base) * 0.6);
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: #fca5a5;
-  border: 1px solid rgb(239 68 68 / 0.4);
-}
-
-.conclusion__text {
-  font-size: calc(var(--text-base) * 1.15);
-  font-weight: 700;
-  text-wrap: balance;
-}
-
-.conclusion em,
-.key em {
-  font-style: normal;
-  background: linear-gradient(120deg, var(--slide-accent), var(--slide-accent-2), var(--slide-accent-3));
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
-}
-
-/* ---------- frase de destaque (passo 5) ---------- */
-.stage {
-  position: relative;
-}
-
-.head {
-  transition:
-    filter 0.8s var(--ease-out),
-    opacity 0.8s var(--ease-out);
-}
-
-.is-key .head,
-.is-key .lanes {
-  filter: blur(8px);
-  opacity: 0.12;
-}
-
-.key {
-  position: absolute;
-  inset: 0;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 0.4em;
-  padding: 0 6vw;
-  text-align: center;
-  pointer-events: none;
-}
-
-.key__a {
-  font-size: var(--text-title);
-  line-height: 1.05;
-  font-weight: 800;
-  letter-spacing: -0.03em;
-  text-wrap: balance;
-}
-
-.key__b {
-  font-size: calc(var(--text-title) * 0.6);
-  line-height: 1.2;
-  font-weight: 700;
-  color: var(--slide-muted);
-  text-wrap: balance;
-}
-
-.key mark {
-  padding: 0 0.1em;
-  color: var(--slide-fg);
-  background: linear-gradient(120deg, var(--slide-accent), var(--slide-accent-2), var(--slide-accent-3)) no-repeat left
-    85% / 0% 0.3em;
-  transition: background-size 0.9s var(--ease-out);
-}
-
-.key[data-step-shown] mark {
-  background-size: 100% 0.3em;
-  transition-delay: 800ms;
 }
 
 @media (max-aspect-ratio: 1 / 1) {

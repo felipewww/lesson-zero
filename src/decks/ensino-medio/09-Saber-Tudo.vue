@@ -4,6 +4,7 @@ import Icon, { type IconName } from '../../components/Icon.vue'
 import { useSteps } from '../../deck/steps'
 
 // Passo 1: "Seu tempo não."  Passos 2..5: os quatro princípios (a nuvem de tecnologias recua)
+// Passo 6: alerta no rodapé — cuidado com hype, FOMO e burnout
 const { step } = useSteps()
 
 const techs = [
@@ -71,10 +72,56 @@ const principles: { icon: IconName; text: string; color: string }[] = [
         </article>
       </div>
     </div>
+
+    <p v-step:up class="warning">
+      <Icon name="alert" class="warning__icon" />
+      <span>Cuidado com</span>
+      <span class="warning__tag">hype</span>
+      <span class="warning__sep">·</span>
+      <span class="warning__tag">FOMO</span>
+      <span class="warning__sep">·</span>
+      <span class="warning__tag">burnout</span>
+    </p>
   </Slide>
 </template>
 
 <style scoped>
+/* ---------- alerta no rodapé (último passo) ---------- */
+.warning {
+  position: absolute;
+  left: 50%;
+  bottom: clamp(24px, 6vh, 64px);
+  translate: -50% 0;
+  display: flex;
+  align-items: center;
+  gap: 0.55em;
+  padding: 0.6em 1.3em;
+  border-radius: 999px;
+  white-space: nowrap;
+  font-size: calc(var(--text-base) * 1.05);
+  font-weight: 700;
+  color: #fde68a;
+  background: rgb(251 191 36 / 0.1);
+  border: 1px solid rgb(251 191 36 / 0.45);
+  box-shadow: 0 16px 40px -20px #fbbf24;
+  z-index: 2;
+}
+
+.warning__icon {
+  font-size: 1.3em;
+  color: #fbbf24;
+}
+
+.warning__tag {
+  font-family: var(--slide-font-mono);
+  font-weight: 800;
+  color: #fbbf24;
+}
+
+.warning__sep {
+  color: rgb(251 191 36 / 0.5);
+}
+
 /* ---------- nuvem de tecnologias ---------- */
 .cloud {
   position: absolute;

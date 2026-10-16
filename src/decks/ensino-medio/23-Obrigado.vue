@@ -22,6 +22,20 @@ import Slide from '../../deck/Slide.vue'
           </svg>
           <span>felipewww@outlook.com.br</span>
         </p>
+        <a
+          class="contact__email contact__link"
+          href="https://www.linkedin.com/in/felipewww"
+          target="_blank"
+          rel="noopener"
+          @mousedown.prevent
+        >
+          <svg class="mail" viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z" />
+            <rect width="4" height="12" x="2" y="9" />
+            <circle cx="4" cy="4" r="2" />
+          </svg>
+          <span>linkedin.com/in/felipewww</span>
+        </a>
       </div>
     </div>
   </Slide>
@@ -115,6 +129,20 @@ import Slide from '../../deck/Slide.vue'
   font-size: calc(var(--text-base) * 0.85);
   background: rgb(255 255 255 / 0.05);
   border: 1px solid rgb(255 255 255 / 0.12);
+}
+
+.contact__link {
+  margin-top: 0.5em;
+  color: var(--slide-fg);
+  text-decoration: none;
+  transition:
+    border-color 0.3s,
+    background 0.3s;
+}
+
+.contact__link:hover {
+  border-color: var(--slide-accent);
+  background: color-mix(in srgb, var(--slide-accent) 10%, transparent);
 }
 
 .mail {

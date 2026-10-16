@@ -2,7 +2,7 @@ import type { Component } from 'vue'
 import '@fontsource-variable/outfit'
 import { sortSlides, type DeckInfo } from '../../deck/slides'
 import Apresentacao from '../ensino-medio/01-Apresentacao.vue'
-import Obrigado from '../ensino-medio/22-Obrigado.vue'
+import Obrigado from '../ensino-medio/23-Obrigado.vue'
 
 // Todo arquivo .vue desta pasta é um slide, na ordem do prefixo numérico.
 // Apresentação do palestrante (início) e agradecimento (fim) vêm do Ensino Médio.

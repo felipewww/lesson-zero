@@ -1,24 +1,34 @@
 <script setup lang="ts">
 import Slide from '../../deck/Slide.vue'
 import Icon from '../../components/Icon.vue'
+import { useSteps } from '../../deck/steps'
 
-// Passo 1: nível intermediário sobe.  Passo 2: nível avançado sobe.
+// Passo 1: intermediário.  Passo 2: avançado.
 const base = ['Lógica', 'JS / TS', 'HTML / CSS', 'SQL', 'APIs', 'Git', 'React / Vue']
 
 const intermediate = [
   { label: 'Frameworks', detail: 'NestJS, Django ou Spring Boot' },
   { label: 'Arquitetura de código', detail: 'SOLID, MVC e Clean Code' },
   { label: 'Testes automatizados' },
+  { label: 'Docker', detail: 'containers' },
   { label: 'Cloud', detail: 'AWS ou GCP' },
   { label: 'CI/CD' },
 ]
 
-const advanced = [
+const advanced: { label: string; detail?: string }[] = [
   { label: 'Mensageria, filas e eventos' },
-  { label: 'Observabilidade' },
-  { label: 'Infraestrutura e Kubernetes' },
   { label: 'Arquitetura e sistemas distribuídos' },
+  { label: 'Segurança' },
+  { label: 'Bancos de dados a fundo', detail: 'índices, réplicas, NoSQL' },
+  { label: 'Infraestrutura como código e Kubernetes' },
+  { label: 'Observabilidade' },
+  { label: 'IA aplicada', detail: 'LLMs, RAG' },
 ]
+
+const { step } = useSteps()
+
+// Duração aproximada de cada nível (média de mercado; cada pessoa tem seu ritmo)
+const time = ['primeiros meses', '1 a 3 anos', '5+ anos']
 </script>
 
 <template>
@@ -29,17 +39,17 @@ const advanced = [
         <h1 v-reveal:blur="150" class="title">E depois dos <em>fundamentos</em>?</h1>
       </header>
 
-      <div class="stairs">
+      <div class="levels">
         <section v-reveal="300" class="level level--base">
           <span class="level__name"><Icon name="check" /> base</span>
-          <ul class="level__mini">
+          <ul class="chips">
             <li v-for="b in base" :key="b">{{ b }}</li>
           </ul>
         </section>
 
-        <section v-step class="level level--mid">
+        <section v-step="1" class="level level--mid">
           <span class="level__name">intermediário</span>
-          <ul class="level__list">
+          <ul class="items">
             <li v-for="(item, i) in intermediate" :key="item.label" :style="{ '--i': i }">
               <strong>{{ item.label }}</strong>
               <small v-if="item.detail">{{ item.detail }}</small>
@@ -47,26 +57,42 @@ const advanced = [
           </ul>
         </section>
 
-        <section v-step class="level level--top">
+        <section v-step="2" class="level level--top">
           <span class="level__name">avançado / especializado</span>
-          <ul class="level__list">
+          <ul class="items">
             <li v-for="(item, i) in advanced" :key="item.label" :style="{ '--i': i }">
               <strong>{{ item.label }}</strong>
+              <small v-if="item.detail">{{ item.detail }}</small>
             </li>
           </ul>
         </section>
+
+        <!-- linha do tempo embaixo das colunas -->
+        <div class="time">
+          <span class="time__track" :style="{ '--p': Math.min(step + 1, 3) / 3 }" />
+          <span
+            v-for="(t, i) in time"
+            :key="t"
+            class="time__label"
+            :class="{ 'is-shown': step >= i, 'is-long': i === 2 }"
+          >
+            <Icon name="clock" /> {{ t }}
+          </span>
+        </div>
       </div>
+
     </div>
   </Slide>
 </template>
 
 <style scoped>
 .stage {
+  position: relative;
   height: 100%;
   display: flex;
   flex-direction: column;
   justify-content: center;
-  gap: clamp(24px, 5vh, 64px);
+  gap: clamp(20px, 4vh, 48px);
 }
 
 .kicker {
@@ -93,110 +119,157 @@ const advanced = [
   color: transparent;
 }
 
-/* ---------- degraus ---------- */
-.stairs {
-  height: clamp(360px, 66vh, 720px);
+/* ---------- três colunas alinhadas + linha do tempo ---------- */
+.levels {
   display: grid;
-  grid-template-columns: 0.8fr 1.2fr 1.2fr;
-  align-items: end;
-  gap: clamp(12px, 1.5vw, 28px);
+  grid-template-columns: 0.75fr 1fr 1.25fr;
+  grid-template-rows: 1fr auto;
+  column-gap: clamp(12px, 1.6vw, 28px);
+  row-gap: clamp(10px, 1.8vh, 20px);
+  font-size: calc(var(--text-base) * 0.82);
+  transition:
+    filter 0.8s var(--ease-out),
+    opacity 0.8s var(--ease-out);
 }
 
 .level {
+  --c: var(--slide-muted);
   display: flex;
   flex-direction: column;
-  gap: 1em;
-  padding: clamp(16px, 1.8vw, 32px);
-  border-radius: 20px 20px 6px 6px;
-  border: 1px solid rgb(255 255 255 / 0.1);
-  font-size: calc(var(--text-base) * 0.9);
+  gap: 0.9em;
+  padding: clamp(14px, 1.6vw, 28px);
+  border-radius: 20px;
+  border: 1px solid color-mix(in srgb, var(--c) 30%, transparent);
+  background: color-mix(in srgb, var(--c) 7%, rgb(10 15 30 / 0.55));
   transition:
     opacity 0.7s var(--ease-out),
     transform 0.8s var(--ease-out);
 }
 
-.level--base {
-  min-height: 40%;
-  background: rgb(255 255 255 / 0.03);
-  color: var(--slide-muted);
-}
-
-.level--mid {
-  --c: var(--slide-accent);
-  min-height: 82%;
-  background: linear-gradient(180deg, rgb(56 189 248 / 0.14), rgb(56 189 248 / 0.03));
-  border-color: rgb(56 189 248 / 0.35);
-}
-
-.level--top {
-  --c: var(--slide-accent-2);
-  min-height: 100%;
-  background: linear-gradient(180deg, rgb(167 139 250 / 0.18), rgb(167 139 250 / 0.03));
-  border-color: rgb(167 139 250 / 0.4);
-  box-shadow: 0 -20px 60px -30px var(--slide-accent-2);
-}
+.level--mid { --c: var(--slide-accent); }
+.level--top { --c: var(--slide-accent-2); }
 
 .level__name {
   display: inline-flex;
   align-items: center;
   gap: 0.4em;
   font-family: var(--slide-font-mono);
-  font-size: 0.8em;
+  font-size: 0.78em;
   letter-spacing: 0.12em;
   text-transform: uppercase;
-  color: var(--c, #34d399);
+  color: var(--c);
 }
 
-.level__mini {
+.level--base .level__name { color: #34d399; }
+
+.chips {
   list-style: none;
   display: flex;
   flex-wrap: wrap;
-  gap: 0.4em;
+  gap: 0.45em;
 }
 
-.level__mini li {
-  padding: 0.25em 0.7em;
+.chips li {
+  padding: 0.3em 0.75em;
   border-radius: 999px;
-  font-size: 0.8em;
-  background: rgb(255 255 255 / 0.05);
+  color: var(--slide-muted);
+  background: rgb(255 255 255 / 0.06);
 }
 
-.level__list {
+.items {
   list-style: none;
-  display: flex;
-  flex-direction: column;
+  display: grid;
   gap: 0.5em;
 }
 
-.level__list li {
+/* avançado em duas colunas para não ficar comprido */
+.level--top .items {
+  grid-template-columns: 1fr 1fr;
+}
+
+.items li {
   display: flex;
   flex-direction: column;
-  padding: 0.5em 0.9em;
+  justify-content: center;
+  padding: 0.55em 0.8em;
   border-radius: 12px;
-  background: rgb(10 15 30 / 0.6);
   border-left: 3px solid var(--c);
+  background: rgb(10 15 30 / 0.6);
   line-height: 1.25;
-  opacity: 0;
-  translate: 0 12px;
-  transition:
-    opacity 0.5s,
-    translate 0.5s var(--ease-out);
 }
 
-.level__list small {
+.items strong {
+  font-weight: 700;
+  color: var(--slide-fg);
+}
+
+.items small {
+  font-size: 0.82em;
   color: var(--slide-muted);
-  font-size: 0.85em;
 }
 
-.level[data-step-shown] .level__list li {
+/* os itens entram em sequência quando a coluna aparece */
+.level[data-step] .items li {
+  opacity: 0;
+  translate: 0 10px;
+  transition:
+    opacity 0.45s var(--ease-out),
+    translate 0.45s var(--ease-out);
+}
+
+.level[data-step-shown] .items li {
   opacity: 1;
   translate: 0 0;
-  transition-delay: calc(450ms + var(--i) * 120ms);
+  transition-delay: calc(250ms + var(--i) * 90ms);
 }
 
-/* degraus sobem do chão */
-.level--mid:not([data-step-shown]),
-.level--top:not([data-step-shown]) {
-  transform: translateY(60px);
+/* linha do tempo */
+.time {
+  grid-column: 1 / -1;
+  position: relative;
+  display: grid;
+  grid-template-columns: 0.75fr 1fr 1.25fr;
+  column-gap: inherit;
+  padding-top: 0.9em;
+}
+
+.time__track {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 4px;
+  width: calc(var(--p) * 100%);
+  border-radius: 2px;
+  background: linear-gradient(90deg, #34d399, var(--slide-accent), var(--slide-accent-2));
+  transition: width 0.8s var(--ease-out);
+}
+
+.time__label {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4em;
+  font-weight: 700;
+  color: var(--slide-muted);
+  opacity: 0;
+  transition: opacity 0.5s 0.4s;
+}
+
+.time__label.is-shown {
+  opacity: 1;
+}
+
+.time__label.is-long {
+  color: var(--slide-accent-2);
+}
+
+/* ---------- tela vertical: colunas empilhadas ---------- */
+@media (max-aspect-ratio: 1 / 1) {
+  .levels {
+    grid-template-columns: 1fr;
+  }
+
+  .time {
+    display: none;
+  }
 }
 </style>

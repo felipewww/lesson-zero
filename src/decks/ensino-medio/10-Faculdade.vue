@@ -6,11 +6,11 @@ import { useSteps } from '../../deck/steps'
 // Passo 1: "Não."  Passo 2: "Uma carreira se constrói com:"  Passos 3..6: blocos da torre (de baixo para cima)
 const { step } = useSteps()
 
-const blocks: { icon: IconName; text: string; color: string }[] = [
-  { icon: 'graduation-cap', text: 'Formação e fundamentos', color: 'var(--slide-accent)' },
-  { icon: 'wrench', text: 'Conhecimento prático', color: 'var(--slide-accent-2)' },
-  { icon: 'box', text: 'Projetos e experiência', color: '#34d399' },
-  { icon: 'refresh', text: 'Aprendizado contínuo', color: 'var(--slide-accent-3)' },
+const blocks: { icon: IconName; text: string; sub: string; color: string }[] = [
+  { icon: 'graduation-cap', text: 'Fundamentos', sub: 'lógica, uma linguagem, banco de dados', color: 'var(--slide-accent)' },
+  { icon: 'rocket', text: 'Projetos próprios', sub: 'algo que funciona e que você pode mostrar', color: 'var(--slide-accent-2)' },
+  { icon: 'users', text: 'Experiência real', sub: 'estágio, equipe, código de outras pessoas', color: '#34d399' },
+  { icon: 'refresh', text: 'Aprendizado contínuo', sub: 'as tecnologias mudam, você acompanha', color: 'var(--slide-accent-3)' },
 ]
 </script>
 
@@ -37,7 +37,10 @@ const blocks: { icon: IconName; text: string; color: string }[] = [
             :style="{ '--c': b.color, '--w': `${100 - i * 8}%` }"
           >
             <Icon :name="b.icon" class="brick__icon" />
-            <span>{{ b.text }}</span>
+            <span class="brick__text">
+              <span class="brick__title">{{ b.text }}</span>
+              <span class="brick__sub">{{ b.sub }}</span>
+            </span>
           </div>
         </div>
       </div>
@@ -112,9 +115,9 @@ const blocks: { icon: IconName; text: string; color: string }[] = [
   align-items: center;
   gap: 0.8em;
   width: var(--w);
-  padding: 1em 1.4em;
+  padding: 0.75em 1.3em;
   border-radius: 16px;
-  font-size: calc(var(--text-base) * 1.2);
+  font-size: calc(var(--text-base) * 1.15);
   font-weight: 700;
   white-space: nowrap;
   background: color-mix(in srgb, var(--c) 12%, rgb(10 15 30 / 0.7));
@@ -129,6 +132,19 @@ const blocks: { icon: IconName; text: string; color: string }[] = [
 .brick__icon {
   font-size: 1.4em;
   color: var(--c);
+}
+
+.brick__text {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.brick__sub {
+  font-size: 0.62em;
+  font-weight: 500;
+  color: var(--slide-muted);
+  white-space: normal;
 }
 
 .brick.is-current {
