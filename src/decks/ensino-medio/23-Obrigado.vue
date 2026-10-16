@@ -14,7 +14,7 @@ import Slide from '../../deck/Slide.vue'
 
       <div v-reveal="700" class="contact">
         <p class="contact__name">Felipe Barreiros</p>
-        <p class="contact__role">Software Engineer Sênior</p>
+        <p class="contact__role">Engenheiro de Software Sênior</p>
         <p class="contact__email">
           <svg class="mail" viewBox="0 0 24 24" aria-hidden="true">
             <rect width="20" height="16" x="2" y="4" rx="2" />
