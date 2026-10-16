@@ -1,8 +1,8 @@
 import { reactive } from 'vue'
 
 /**
- * Programa do "robô humano": os comandos que a turma dita no slide 14
- * ficam aqui e viram blocos executados pelo robozinho no slide 15.
+ * Programa do "robô humano": os comandos que a turma dita no slide 13
+ * ficam aqui e viram blocos executados pelo robozinho no slide 14.
  */
 export type RobotCommand = 'forward' | 'right' | 'left' | 'grab'
 
